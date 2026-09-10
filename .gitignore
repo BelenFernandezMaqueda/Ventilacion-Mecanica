@@ -1,0 +1,14 @@
+# entorno virtual
+.venv/
+venv/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# salidas generadas
+test/debug_deteccion.png
+
+# sistema
+.DS_Store
