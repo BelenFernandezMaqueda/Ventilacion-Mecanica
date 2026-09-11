@@ -28,7 +28,7 @@ T_FIN = 1640.0
 SALIDA_PNG = ROOT / "test" / "debug_deteccion.png"
 # parametros (los mismos que usa test_tres_metodos.py)
 FS = 256
-FRECUENCIA_CORTE = 5.0
+FRECUENCIA_CORTE = 3.0
 UMBRAL_POSITIVO = 70000
 UMBRAL_NEGATIVO = -70000
 TIEMPO_MAXIMO = 4

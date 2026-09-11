@@ -18,6 +18,7 @@ lo que la deteccion es mas confiable.
 from collections import deque
 
 import numpy as np
+from scipy.signal import butter, filtfilt
 
 def detectar_respiraciones(
     derivada,
@@ -184,35 +185,27 @@ def detectar_respiraciones_por_volumen(
     return np.asarray(respiraciones, dtype=float)
 
 
-def filtrar_pasabajos(x, fs, frecuencia_corte=5.0, orden=4):
-    """Pasabajos de fase cero con magnitud tipo Butterworth (via FFT).
-
-    No introduce desfasaje y evita el ``ringing`` de un corte abrupto. Se quita
-    la tendencia lineal antes de transformar para no generar saltos en los
-    bordes y se la vuelve a sumar al final.
+def filtrar_pasabajos(x, fs, frecuencia_corte=3.0, orden=4):
+    """Pasabajos Butterworth de fase cero, via ``scipy.signal.filtfilt``.
     """
     x = np.asarray(x, dtype=float)
     n = len(x)
     if n < 4 or frecuencia_corte <= 0 or frecuencia_corte >= fs / 2:
         return x.copy()
 
-    indices = np.arange(n)
-    pendiente = (x[-1] - x[0]) / (n - 1)
-    tendencia = x[0] + pendiente * indices
-    residuo = x - tendencia
+    b, a = butter(orden, frecuencia_corte, btype="low", fs=fs)
+    padlen = 3 * max(len(a), len(b))
+    if n <= padlen:
+        return x.copy()
 
-    frecuencias = np.fft.rfftfreq(n, d=1.0 / fs)
-    respuesta = 1.0 / np.sqrt(1.0 + (frecuencias / frecuencia_corte) ** (2 * orden))
-    filtrado = np.fft.irfft(np.fft.rfft(residuo) * respuesta, n=n)
-
-    return filtrado + tendencia
+    return filtfilt(b, a, x)
 
 
 def detectar_respiraciones_filtrado(
     flujo,
     tiempo,
     fs=256,
-    frecuencia_corte=5.0,
+    frecuencia_corte=3.0,
     umbral_positivo=70000,
     umbral_negativo=-70000,
     tiempo_maximo=2,
