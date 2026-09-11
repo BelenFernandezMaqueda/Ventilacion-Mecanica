@@ -99,9 +99,9 @@ derivada del flujo, un **pico positivo seguido de un pico negativo**.
 
 ### Cómo funciona el método elegido (método 3)
 
-1. **Pasabajos de fase cero** al flujo (magnitud tipo Butterworth vía FFT, corte
-   5 Hz). Quita el ruido de alta frecuencia **sin desfasar** la señal (no corre
-   los tiempos de las respiraciones).
+1. **Pasabajos de fase cero** al flujo (Butterworth de orden 4 vía
+   `scipy.signal.filtfilt`, corte 3 Hz). Quita el ruido de alta frecuencia
+   **sin desfasar** la señal (no corre los tiempos de las respiraciones).
 2. **Derivada** del flujo filtrado.
 3. **Cuadrado conservando el signo**: `sign(d) · d²`. Los picos grandes
    (respiraciones reales) crecen muchísimo más que los chicos (ruido residual),
@@ -181,6 +181,20 @@ más profundo del pico negativo aparece bastante después de ese cruce.
   como dobles.
 
 ### Mejoras estructurales
+
+- **¿Hacía falta tanta vuelta?** Para cuando se me ocurrió que quizás alcanzaba
+  con un umbral directo sobre el flujo (sin derivar ni filtrar) ya había
+  arrancado por el lado de la derivada y llegado bastante lejos con eso — a
+  veces es mejor no saber jaja. El flujo tiene offset y deriva lenta (por eso
+  el método 2 le resta una línea de base), así que un umbral fijo sobre el
+  flujo crudo probablemente sea frágil ante eso, pero no se llegó a probar a
+  fondo; quedaría como cuarto método para comparar en `test_tres_metodos.py`.
+
+- **Picos extra en la derivada filtrada.** Además de los picos grandes que
+  marcan inicio/fin de respiración, se ven picos más chicos que hoy se
+  ignoran. Podrían servir para caracterizar otras cosas (esfuerzos
+  espiratorios, dobles picos, irregularidades dentro de una misma
+  respiración, etc.).
 
 - **Sin ground-truth.** Todo el ajuste fue visual sobre las 4 señales. Con
   respiraciones marcadas a mano se podría medir precisión / recall y ajustar los
